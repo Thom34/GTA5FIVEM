@@ -1,3 +1,4 @@
+local ESX = exports["es_extended"]:getSharedObject()
 local menuOpen = false
 
 -- List of handling properties to be managed by the UI
@@ -24,37 +25,44 @@ local handlingFields = {
 }
 
 RegisterCommand('handling', function()
-    menuOpen = not menuOpen
-    SetNuiFocus(menuOpen, menuOpen)
+    ESX.TriggerServerCallback('handlingmod:isAuthorized', function(allowed)
+        if not allowed then
+            lib.notify({ title = 'Handling', description = "Vous n'êtes pas autorisé à utiliser cette commande" })
+            return
+        end
 
-    if menuOpen then
-        local playerPed = PlayerPedId()
-        local vehicle = GetVehiclePedIsIn(playerPed, false)
-        local handlingData = {}
+        menuOpen = not menuOpen
+        SetNuiFocus(menuOpen, menuOpen)
 
-        if vehicle ~= 0 then
-            -- Populate the handlingData table with current vehicle values
-            for _, field in ipairs(handlingFields) do
-                -- NOTE: We are assuming 'CHandlingData' is the correct class name.
-                -- This is a common pattern, but might need adjustment if it fails.
-                handlingData[field] = GetVehicleHandlingFloat(vehicle, 'CHandlingData', field)
+        if menuOpen then
+            local playerPed = PlayerPedId()
+            local vehicle = GetVehiclePedIsIn(playerPed, false)
+            local handlingData = {}
+
+            if vehicle ~= 0 then
+                -- Populate the handlingData table with current vehicle values
+                for _, field in ipairs(handlingFields) do
+                    -- NOTE: We are assuming 'CHandlingData' is the correct class name.
+                    -- This is a common pattern, but might need adjustment if it fails.
+                    handlingData[field] = GetVehicleHandlingFloat(vehicle, 'CHandlingData', field)
+                end
+                SendNUIMessage({
+                    type = 'open',
+                    handlingData = handlingData
+                })
+            else
+                -- If not in a vehicle, send a message to show a relevant message in the UI
+                SendNUIMessage({
+                    type = 'open',
+                    handlingData = nil
+                })
             end
-            SendNUIMessage({
-                type = 'open',
-                handlingData = handlingData
-            })
         else
-            -- If not in a vehicle, send a message to show a relevant message in the UI
             SendNUIMessage({
-                type = 'open',
-                handlingData = nil
+                type = 'close'
             })
         end
-    else
-        SendNUIMessage({
-            type = 'close'
-        })
-    end
+    end)
 end, false)
 
 RegisterNUICallback('close', function(data, cb)
