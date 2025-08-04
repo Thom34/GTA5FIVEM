@@ -28,6 +28,7 @@ RegisterCommand('handling', function()
     ESX.TriggerServerCallback('handlingmod:isAuthorized', function(allowed)
         if not allowed then
             lib.notify({ title = 'Handling', description = "Vous n'êtes pas autorisé à utiliser cette commande" })
+            ESX.ShowNotification("Vous n'êtes pas autorisé à utiliser cette commande")
             return
         end
 
