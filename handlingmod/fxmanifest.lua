@@ -5,7 +5,10 @@ author 'Jules'
 description 'Un mod de handling avancé pour FiveM.'
 version '1.0.0'
 
+dependency 'es_extended'
+
 client_script 'client/main.lua'
+server_script 'server/main.lua'
 
 ui_page 'html/index.html'
 
